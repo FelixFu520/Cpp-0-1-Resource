@@ -43,19 +43,9 @@ C++程序在执行时，将内存大方向划分为**4个区域**
 
 ​		全局变量和静态变量存放在此.
 
-​		全局区还包含了常量区, 字符串常量和其他常量也存放在此.
+​		全局区还包含了常量区, 字符串常量和其他常量(const修饰的常量）也存放在此.
 
 ​		==该区域的数据在程序结束后由操作系统释放==.
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -122,7 +112,7 @@ int main() {
 
 
 
-
+![image-20201110163132501](assets/image-20201110163132501.png)
 
 
 ### 1.2 程序运行后
@@ -131,7 +121,7 @@ int main() {
 
 ​	**栈区：**
 
-​		由编译器自动分配释放, 存放函数的参数值,局部变量等
+​		由编译器自动分配释放, 存放函数的**参数值,局部变量**等
 
 ​		注意事项：不要返回局部变量的地址，栈区开辟的数据由编译器自动释放
 
@@ -150,8 +140,8 @@ int main() {
 
 	int *p = func();
 
-	cout << *p << endl;
-	cout << *p << endl;
+	cout << *p << endl;	//10， 第一次打印正确，是因为编译器做了保留
+	cout << *p << endl; //24212
 
 	system("pause");
 
@@ -176,6 +166,8 @@ int main() {
 ```c++
 int* func()
 {
+  //利用new关键字，可以将数据开辟到队区
+  //指针 本质也是局部变量，放在栈上，指针保存的数据放在堆上。
 	int* a = new int(10);
 	return a;
 }
@@ -297,7 +289,7 @@ int main() {
 
 **语法：** `数据类型 &别名 = 原名`
 
-
+![image-20201110170217139](assets/image-20201110170217139.png)
 
 **示例：**
 
@@ -465,18 +457,18 @@ int main() {
 
 	//不能返回局部变量的引用
 	int& ref = test01();
-	cout << "ref = " << ref << endl;
-	cout << "ref = " << ref << endl;
+	cout << "ref = " << ref << endl;	//ref=10	局部变量在栈区
+	cout << "ref = " << ref << endl;	//ref=2598435
 
 	//如果函数做左值，那么必须返回引用
 	int& ref2 = test02();
-	cout << "ref2 = " << ref2 << endl;
-	cout << "ref2 = " << ref2 << endl;
+	cout << "ref2 = " << ref2 << endl; //ref2=10, 全局变量
+	cout << "ref2 = " << ref2 << endl; //ref2=10,
 
-	test02() = 1000;
+	test02() = 1000;	//如果一个函数的返回值是引用，函数调用可以作为左值
 
-	cout << "ref2 = " << ref2 << endl;
-	cout << "ref2 = " << ref2 << endl;
+	cout << "ref2 = " << ref2 << endl;	//1000
+	cout << "ref2 = " << ref2 << endl;	//1000
 
 	system("pause");
 
@@ -1272,7 +1264,8 @@ void test01()
 
 int main() {
 	
-	test01();
+	test01();//会有构造和析构函数
+  Person p; //main函数退出会有析构函数
 
 	system("pause");
 
@@ -1599,6 +1592,7 @@ public:
 		cout << "拷贝构造函数!" << endl;
 		//如果不利用深拷贝在堆区创建新内存，会导致浅拷贝带来的重复释放堆区问题
 		m_age = p.m_age;
+    // m_age = p.m_age; 编译器默认写的
 		m_height = new int(*p.m_height);
 		
 	}
@@ -1639,13 +1633,17 @@ int main() {
 
 > 总结：如果属性有在堆区开辟的，一定要自己提供拷贝构造函数，防止浅拷贝带来的问题
 
+![image-20201111141316201](assets/image-20201111141316201.png)
+
+p2先释放，浅拷贝会造成堆区内容，重复释放。
 
 
 
+浅拷贝问题要用深拷贝解决。
 
 
 
-
+![image-20201111141506519](assets/image-20201111141506519.png)
 
 #### 4.2.6 初始化列表
 
@@ -1758,7 +1756,7 @@ class Person
 public:
 
 	//初始化列表可以告诉编译器调用哪一个构造函数
-	Person(string name, string pName) :m_Name(name), m_Phone(pName)
+	Person(string name, string pName) :m_Name(name), m_Phone(pName) //Phone m_Phone = pName 隐式转换
 	{
 		cout << "Person构造" << endl;
 	}
@@ -1904,7 +1902,7 @@ public:
 	}
 
 	static int m_A; //静态成员变量
-	int m_B; // 
+	int m_B; // 非静态成员变量
 private:
 
 	//静态成员函数也是有访问权限的
@@ -1992,7 +1990,7 @@ int main() {
 }
 ```
 
-
+空对象占用的内存空间是1字节。C++的编译器会每个空对象分配一个空间，为了区别空对象占用的内存位置。每个空对象有一个独一无二的内存位置。
 
 
 
@@ -2034,10 +2032,10 @@ public:
 		this->age = age;
 	}
 
-	Person& PersonAddPerson(Person p)
+	Person& PersonAddPerson(Person p)//思考，Person PersonAddPerson（Person p）是什么情况？
 	{
 		this->age += p.age;
-		//返回对象本身
+		//this是指向p的指针，也就是地址，*this 返回对象本身
 		return *this;
 	}
 
@@ -2176,7 +2174,7 @@ public:
 	}
 
 	void MyFunc() const {
-		//mA = 10000;
+		//m_A = 10000;
 	}
 
 public:
@@ -2561,7 +2559,7 @@ public:
 		this->m_B = b;
 	}
 
-	//成员函数 实现不了  p << cout 不是我们想要的效果
+	//成员函数 实现不了，  p << cout 不是我们想要的效果
 	//void operator<<(Person& p){
 	//}
 
@@ -2571,7 +2569,7 @@ private:
 };
 
 //全局函数实现左移重载
-//ostream对象只能有一个
+//ostream对象只能有一个，简化cout<<p
 ostream& operator<<(ostream& out, Person& p) {
 	out << "a:" << p.m_A << " b:" << p.m_B;
 	return out;
@@ -2629,7 +2627,7 @@ public:
 		m_Num = 0;
 	}
 	//前置++
-	MyInteger& operator++() {
+	MyInteger& operator++() {//返回引用
 		//先++
 		m_Num++;
 		//再返回
@@ -2637,7 +2635,7 @@ public:
 	}
 
 	//后置++
-	MyInteger operator++(int) {
+	MyInteger operator++(int) {//返回值
 		//先返回
 		MyInteger temp = *this; //记录当前本身的值，然后让本身的值加1，但是返回的是以前的值，达到先返回后++；
 		m_Num++;
@@ -4759,7 +4757,7 @@ C++中对文件操作需要包含头文件 ==&lt; fstream &gt;==
 
    ofs.close();
 
-   ​
+   
 
 文件打开方式：
 
