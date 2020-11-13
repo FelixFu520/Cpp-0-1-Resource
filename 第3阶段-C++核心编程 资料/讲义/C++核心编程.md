@@ -3872,7 +3872,9 @@ int main() {
 * 菱形继承带来的主要问题是子类继承两份相同的数据，导致资源浪费以及毫无意义
 * 利用虚继承可以解决菱形继承问题
 
+![image-20201112152151559](assets/image-20201112152151559.png)
 
+![image-20201112152317323](assets/image-20201112152317323.png)
 
 
 
@@ -3948,7 +3950,7 @@ public:
 
 };
 //我们希望传入什么对象，那么就调用什么对象的函数
-//如果函数地址在编译阶段就能确定，那么静态联编
+//如果函数地址在编译阶段就能确定，那么静态联编——不加virtual关键字
 //如果函数地址在运行阶段才能确定，就是动态联编
 
 void DoSpeak(Animal & animal)
@@ -3998,11 +4000,11 @@ int main() {
 
 
 
+![image-20201112155431301](assets/image-20201112155431301.png)
 
+![image-20201112155750991](assets/image-20201112155750991.png)
 
-
-
-
+当Animal &animal= cat；animal.speak();时，animal会访问cat的vftable。
 
 #### 4.7.2 多态案例一-计算器类
 
@@ -4901,7 +4903,7 @@ void test01()
 	//}
 
 	char c;
-	while ((c = ifs.get()) != EOF)
+	while ((c = ifs.get()) != EOF)// EOF end of file
 	{
 		cout << c;
 	}
